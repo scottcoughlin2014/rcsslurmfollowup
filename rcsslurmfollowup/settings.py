@@ -53,8 +53,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # rcsfootprints apps
-    'issue.apps.IssueConfig',
+    # rcsslurmfollowup apps
+    'efficiency.apps.EfficiencyConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -98,6 +99,11 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = 'users.CustomUser'
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -120,10 +126,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Chicago'
 
 USE_I18N = True
 
@@ -131,8 +136,15 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Email Defaults
+
+DEFAULT_FROM_EMAIL = 'scottcoughlin2014@u.northwestern.edu'
+SERVER_EMAIL = 'scottcoughlin2014@u.northwestern.edu'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
