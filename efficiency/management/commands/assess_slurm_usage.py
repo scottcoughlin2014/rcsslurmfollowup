@@ -23,13 +23,14 @@ class Command(BaseCommand):
             accounts = Account.objects.filter(user=user) 
             for account in accounts: 
                 # use sacct to find jobids of jobs from a given day, and whether they completed or not
-                result = subprocess.run(['sacct', '--user={0}'.format(netid), '--account={0}'.format(account.account), '-X', '--starttime={0}'.format(options['start_time']), '--endtime={0}'.format(options['end_time'])], stdout=subprocess.PIPE) 
-                breakpoint()
+                result = subprocess.run(['sacct', '--user={0}'.format(netid), '--account={0}'.format(account.account), '-X', '--starttime={0}'.format(options['start_time']), '--endtime={0}'.format(options['end_time']), "--format=JobID,JobName,Partition,Account,AllocCPUS,State,ExitCode,NNodes"], stdout=subprocess.PIPE) 
                 result = result.stdout.decode("utf-8") 
                 # have they submitted jobs during this time frame? 
                 if len(result.split("\n")) > 3: 
                     # if yes make a helpful dataframe for thos jobs
-                    job_df = pandas.DataFrame([i.split(" ") for i in result.replace("  "," ").replace("  ", " ").replace("  ", " ").replace("  "," ").replace("  "," ").split("\n")], columns=["JobID", "JobName", "Partition", "Account", "AllocCPUS", "State", "ExitCode", "None", "None1"]) 
+                    job_df = pandas.DataFrame([i.split(" ") for i in result.replace("  "," ").replace("  ", " ").replace("  ", " ").replace("  "," ").replace("  "," ").split("\n")], columns=["JobID", "JobName", "Partition", "Account", "AllocCPUS", "State", "ExitCode", "NNodes", "None", "None1"]) 
+                    breakpoint()
+                    breakpoint()
                     # did any of their jobs complete that day?
                     job_df = job_df.loc[job_df.State == "COMPLETED"] 
                     if job_df.empty:
@@ -37,7 +38,7 @@ class Command(BaseCommand):
 
                     # take a sampling of the completed jobs
                     job_df = job_df.sample(n=min(options['nsamples'], len(job_df))) 
-                    for jobid, numcpus in zip(job_df.JobID, job_df.AllocCPUS):
+                    for jobid, numcpus, nnodes in zip(job_df.JobID, job_df.AllocCPUS, job_df.NNodes):
                         result = subprocess.run(["seff", "{0}".format(jobid)], stdout=subprocess.PIPE)  
                         result = result.stdout.decode("utf-8").split("\n")
 
@@ -68,5 +69,5 @@ class Command(BaseCommand):
                         if mem_requested_unit == "TB":
                             mem_requested = mem_requested * 1000
 
-                        eff = Efficiency(user=user, jobid=jobid, emailed=False, cpueff=cpueff, mem_eff=mem_eff, mem_used=mem_used, mem_requested=mem_requested, number_of_cpus=numcpus)
+                        eff = Efficiency(user=user, jobid=jobid, emailed=False, cpueff=cpueff, mem_eff=mem_eff, mem_used=mem_used, mem_requested=mem_requested, number_of_cpus=numcpus, number_of_nodes=nnodes)
                         eff.save()

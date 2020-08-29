@@ -49,7 +49,8 @@ def get_credentials(credentials_json=None, credentials_token=None):
 
     return creds
 
-def create_message(to, message_text, subject, sender="scottcoughlin2014@u.northwestern.edu", text_type='plain'):
+def create_message(to, message_text, subject, sender="scottcoughlin2014@u.northwestern.edu",
+                   text_type='plain'):
     """Create a message for an email.
 
     Args:
@@ -91,8 +92,7 @@ def send_message(service, user_id, message):
   except errors.HttpError:
     print('An error occurred: %s' % error)
 
-
-def send_email(message_text, to, subject, text_type='plain', **kwargs):
+def send_followup(message_text, to, subject, text_type='plain', **kwargs):
     creds = get_credentials(**kwargs)
     service = build('gmail', 'v1', credentials=creds)
     message = create_message(to=to, message_text=message_text, text_type=text_type, subject=subject)

@@ -1,0 +1,60 @@
+from django.core.management.base import BaseCommand, CommandError
+from efficiency.models import Efficiency
+from utils.quickstart import send_followup
+
+import subprocess 
+import pandas 
+import time
+import datetime
+
+class Command(BaseCommand):
+    help = 'Command that emails users about their computing resource efficiency based on certain criteria'
+
+    def add_arguments(self, parser):
+        parser.add_argument("--memory-efficiency-threshold", type=int, default = 0.5)
+        parser.add_argument("--memory-requested-threshold", type=int, default = 10)
+        parser.add_argument("--google-api-token")
+
+    def handle(self, *args, **options):
+        # loop over jobs where a certain memory efficiency was not met and the user has not been emailed about these jobs
+        all_jobs_ids = []
+        all_number_of_cpus = []
+        all_memory_requested = []
+        all_mem_eff = []
+        all_users = []
+        all_mem_used = []
+        all_emails = []
+        for eff in Efficiency.objects.filter(emailed=False).filter(mem_requested__gt=options['memory_requested_threshold']).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(number_of_cpus__lt=24).order_by('user'): 
+            all_jobs_ids.append(eff.jobid)
+            all_memory_requested.append(eff.mem_requested)
+            all_mem_eff.append(eff.mem_eff)
+            all_mem_used.append(eff.mem_used)
+            all_number_of_cpus.append(eff.number_of_cpus)
+            all_users.append(eff.user.username)
+            all_emails.append(eff.user.email)
+        df = pandas.DataFrame({'jobid': all_jobs_ids, 'mem_requested' : all_memory_requested, 'mem_eff' : all_mem_eff, 'user' : all_users, 'email': all_emails, 'number_of_cpus' : all_number_of_cpus, 'mem_used' : all_mem_used})
+        for (user, email), utilization in df.groupby(["user", "email"]):
+            subject = "Concerning Utilization of Computing Resources by Recent Jobs on QUEST"
+            message_text="""
+Hello,
+
+The Research Computing Services team at Northwestern is attempting to help general access users understand the differences between how many computing resources they are requesting, versus how many they are actually using. This effort is meant to help in two ways, limit unnecessary docking of your FairShare score (which determines you priority in receiving comopouting resources relative to the rest of the community) and to help make sure that as many of the computing resources as QUEST has to offer do not go idle as possible. To this end, we wanted to inform you of some recent jobs you have submitted which use less than half of the memory you request for them.
+
+"""
+            for jobid, mem_eff, mem_requested, num_cpus, mem_used in zip(utilization.jobid, utilization.mem_eff, utilization.mem_requested, utilization.number_of_cpus, utilization.mem_used):
+                message_text = message_text + '\t JobID : {0}, Memory Requested {1}, Memory Requested Per CPU {2}, Memory Utilized {3}, Memory Efficiency {4}\n'.format(jobid, mem_requested, mem_requested/num_cpus, mem_used, mem_eff)
+
+            message_text = message_text + """
+Thanks and please e-mail any question you have to quest-help@northwestern.edu,
+
+Scotty
+
+Scott Coughlin, PhD
+Computational Specialist
+Research Computing Services and CIERA
+Northwestern University
+s-coughlin@northwestern.edu
+"""
+            # send email
+            send_followup(credentials_token=options['google_api_token'], to='mnballer1992@gmail.com', subject=subject, message_text=message_text)
+            breakpoint()

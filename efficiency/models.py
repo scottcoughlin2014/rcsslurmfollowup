@@ -10,6 +10,7 @@ class Efficiency(models.Model):
     )
     jobid = models.IntegerField()
     number_of_cpus = models.IntegerField()
+    number_of_nodes = models.IntegerField()
     cpueff = models.FloatField()
     mem_eff = models.FloatField()
     mem_used = models.FloatField()
