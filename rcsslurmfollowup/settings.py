@@ -38,9 +38,9 @@ except NameError:
             to generate your secret key!' % SECRET_FILE)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
 
 
 # Application definition
@@ -94,14 +94,18 @@ WSGI_APPLICATION = 'rcsfootprints.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ['SLURM_DATABASE_NAME'],
+        'USER': os.environ['SLURM_USER'],
+        'PASSWORD': os.environ['SLURM_PASSWORD'],
+        'HOST': os.environ['SLURM_HOST'],
+        'PORT': os.environ['SLURM_PORT'],
     }
 }
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
-ACCOUNT_EMAIL_REQUIRED = True
+#ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = True
 
 
