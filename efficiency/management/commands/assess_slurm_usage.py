@@ -29,8 +29,6 @@ class Command(BaseCommand):
                 if len(result.split("\n")) > 3: 
                     # if yes make a helpful dataframe for thos jobs
                     job_df = pandas.DataFrame([i.split(" ") for i in result.replace("  "," ").replace("  ", " ").replace("  ", " ").replace("  "," ").replace("  "," ").split("\n")], columns=["JobID", "JobName", "Partition", "Account", "AllocCPUS", "State", "ExitCode", "NNodes", "None", "None1"]) 
-                    breakpoint()
-                    breakpoint()
                     # did any of their jobs complete that day?
                     job_df = job_df.loc[job_df.State == "COMPLETED"] 
                     if job_df.empty:
