@@ -5,6 +5,7 @@ from utils.quickstart import send_followup
 import subprocess 
 import pandas 
 import time
+import numpy
 import datetime
 
 class Command(BaseCommand):
@@ -19,6 +20,7 @@ class Command(BaseCommand):
         # loop over jobs where a certain memory efficiency was not met and the user has not been emailed about these jobs
         all_jobs_ids = []
         all_number_of_cpus = []
+        all_number_of_nodes = []
         all_memory_requested = []
         all_mem_eff = []
         all_users = []
@@ -30,28 +32,35 @@ class Command(BaseCommand):
             all_mem_eff.append(eff.mem_eff)
             all_mem_used.append(eff.mem_used)
             all_number_of_cpus.append(eff.number_of_cpus)
+            all_number_of_nodes.append(eff.number_of_nodes)
             all_users.append(eff.user.username)
             all_emails.append(eff.user.email)
-        df = pandas.DataFrame({'jobid': all_jobs_ids, 'mem_requested' : all_memory_requested, 'mem_eff' : all_mem_eff, 'user' : all_users, 'email': all_emails, 'number_of_cpus' : all_number_of_cpus, 'mem_used' : all_mem_used})
+        df = pandas.DataFrame({'jobid': all_jobs_ids, 'mem_requested' : all_memory_requested, 'mem_eff' : all_mem_eff, 'user' : all_users, 'email': all_emails, 'number_of_cpus' : all_number_of_cpus, 'mem_used' : all_mem_used, 'nnodes' : all_number_of_nodes})
         for (user, email), utilization in df.groupby(["user", "email"]):
             subject = "Concerning Utilization of Computing Resources by Recent Jobs on QUEST"
             message_text="""
 Hello,
 
-The Research Computing Services team at Northwestern is attempting to help general access users understand the differences between how many computing resources they are requesting, versus how many they are actually using. This effort is meant to help in two ways, limit unnecessary docking of your FairShare score (which determines you priority in receiving comopouting resources relative to the rest of the community) and to help make sure that as many of the computing resources as QUEST has to offer do not go idle as possible. To this end, we wanted to inform you of some recent jobs you have submitted which use less than half of the memory you request for them.
+The Research Computing Services team at Northwestern is attempting to help general access users understand the differences between how many computing resources they are requesting, versus how many they are actually using. This effort is meant to help in two ways. First, this can help your FairShare score which determines your priority in receiving computing resources relative to the rest of the community. Second, this can help make sure that we are maximizing the research computing provided by QUEST. To this end, we wanted to inform you of some recent jobs you have submitted which use less than half of the memory you requested for them. We also provide a recommended setting for the memory of each job
 
 """
-            for jobid, mem_eff, mem_requested, num_cpus, mem_used in zip(utilization.jobid, utilization.mem_eff, utilization.mem_requested, utilization.number_of_cpus, utilization.mem_used):
-                message_text = message_text + '\t JobID : {0}, Memory Requested {1}, Memory Requested Per CPU {2}, Memory Utilized {3}, Memory Efficiency {4}\n'.format(jobid, mem_requested, mem_requested/num_cpus, mem_used, mem_eff)
+            for jobid, mem_eff, mem_requested, num_cpus, mem_used, nnodes in zip(utilization.jobid, utilization.mem_eff, utilization.mem_requested, utilization.number_of_cpus, utilization.mem_used, utilization.nnodes):
+                message_text = message_text + """
+\tJobID : {0}, Number of Nodes Requested: {1}, Numbers of CPUS per Node Requested {2}, Memory Requested {3}, Memory Requested Per CPU {4}, Memory Utilized {5}, Memory Efficiency {6}
+
+Recommendation #SBATCH --mem-per-cpu={7}
+""".format(jobid, nnodes, num_cpus, mem_requested, mem_requested/num_cpus, mem_used, mem_eff, numpy.ceil(mem_used) + 1)
 
             message_text = message_text + """
-Thanks and please e-mail any question you have to quest-help@northwestern.edu,
+Please see https://kb.northwestern.edu/92939 for more information on learning about the memory footprint of your programs and please do not hesitate to e-mail any question you have to quest-help@northwestern.edu,
 
-Scotty
+Thanks!
+
+Scotty and the Research Computing Services Team
 
 Scott Coughlin, PhD
 Computational Specialist
-Research Computing Services and CIERA
+IT Research Computing Services
 Northwestern University
 s-coughlin@northwestern.edu
 """
