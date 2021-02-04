@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from efficiency.models import Efficiency
+from users.models import CustomUser
 from utils.quickstart import send_followup
 
 import subprocess 
@@ -26,7 +27,7 @@ class Command(BaseCommand):
         all_users = []
         all_mem_used = []
         all_emails = []
-        for eff in Efficiency.objects.filter(emailed=False).filter(mem_requested__gt=options['memory_requested_threshold']).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(number_of_cpus__lt=24).order_by('user'): 
+        for eff in Efficiency.objects.filter(emailed=False).filter(mem_requested__gt=options['memory_requested_threshold']).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(number_of_cpus__lt=14).filter(sent_email=False).order_by('user'): 
             all_jobs_ids.append(eff.jobid)
             all_memory_requested.append(eff.mem_requested)
             all_mem_eff.append(eff.mem_eff)
@@ -66,4 +67,7 @@ s-coughlin@northwestern.edu
 """
             # send email
             send_followup(credentials_token=options['google_api_token'], to='mnballer1992@gmail.com', subject=subject, message_text=message_text)
+            job_obj = Efficiency.objects.get(jobid=jobid)
+            job_obj.emailed =True
+            job_obj.save()
             breakpoint()
