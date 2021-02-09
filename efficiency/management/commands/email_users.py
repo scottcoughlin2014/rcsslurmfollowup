@@ -15,6 +15,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--memory-efficiency-threshold", type=int, default = 0.5)
         parser.add_argument("--memory-requested-threshold", type=int, default = 10)
+        parser.add_argument("--cpu-efficiency-threshold", type=int, default = 0.5)
+        parser.add_argument("--cpus-requested-threshold", type=int, default = 14)
         parser.add_argument("--start-time", default = datetime.datetime.now().strftime("%Y-%m-%d"),
                             help="It must be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format.")
         parser.add_argument("--end-time", default = datetime.datetime.now().strftime("%Y-%m-%d"),
@@ -23,8 +25,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # For now we simple print this reflag information
-        print("There were {0} jobs that had a CPU efficiency less than 50 percent during this time".format(Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(cpueff__lt=0.5).count()))
-        print("There were {0} jobs that had a memory efficiency less than 50 percent during this time".format(Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(mem_eff__lt=0.5).count()))
+        print("There were {0} jobs that had a CPU efficiency less than 50 percent during this time".format(Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(cpueff__lt=options['cpu_efficiency_threshold']).count()))
+        print("""
+There were {0}/{1} jobs that requested more than {2}GB of memory and less than {3} CPUs
+that have a memory efficiency less than 50 percent during this time
+""".format(Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(mem_eff__lt=0.5).filter(mem_requested__gt=options['memory_requested_threshold']).filter(number_of_cpus__lt=options['cpus_requested_threshold']).count(), Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(mem_requested__gt=options['memory_requested_threshold']).filter(number_of_cpus__lt=options['cpus_requested_threshold']).count(), options['memory_requested_threshold'], options['cpus_requested_threshold']))
+        breakpoint()
         # loop over jobs where a certain memory efficiency was not met and the user has not been emailed about these jobs
         all_jobs_ids = []
         all_number_of_cpus = []
@@ -34,7 +40,7 @@ class Command(BaseCommand):
         all_users = []
         all_mem_used = []
         all_emails = []
-        for eff in Efficiency.objects.filter(emailed=False).filter(mem_requested__gt=options['memory_requested_threshold']).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(number_of_cpus__lt=14).filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).order_by('user'): 
+        for eff in Efficiency.objects.filter(emailed=False).filter(mem_requested__gt=options['memory_requested_threshold']).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(number_of_cpus__lt=options['cpus_requested_threshold']).filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).order_by('user'): 
             all_jobs_ids.append(eff.jobid)
             all_memory_requested.append(eff.mem_requested)
             all_mem_eff.append(eff.mem_eff)
