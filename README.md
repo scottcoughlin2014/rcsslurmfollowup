@@ -7,5 +7,5 @@ source activate /projects/a9009/sbc538/improve_slurm_efficiency_project/improve-
 
 # Running code
 ./manage.py add_users
-./manage.py assess_slurm_usage
-./manage.py email_users
+./manage.py assess_slurm_usage --start-time=01/01/21 --end-time=01/02/21
+./manage.py email_users --google-api-token token.pickle --start-time 2021-01-01 --end-time 2021-01-02

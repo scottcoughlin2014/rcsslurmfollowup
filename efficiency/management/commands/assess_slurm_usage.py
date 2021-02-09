@@ -20,7 +20,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # use sacct to find jobids of all completed jobs over the supplied time period
         f = StringIO()
-        result = subprocess.run(['sacct', '-X', '--starttime={0}'.format(options['start_time']), '--endtime={0}'.format(options['end_time']), "--format=JobID,JobName,Partition,Account,User,AllocCPUS,State,ExitCode,NNodes", "--parsable", "--state=cd", "--allusers"], stdout=subprocess.PIPE)
+        result = subprocess.run(['sacct', '-X', '--starttime={0}'.format(options['start_time']), '--endtime={0}'.format(options['end_time']), "--format=JobID,JobName,Partition,Account,User,AllocCPUS,State,ExitCode,NNodes,Start", "--parsable", "--state=cd", "--allusers"], stdout=subprocess.PIPE)
         csv.writer(f).writerows([[i] for i in result.stdout.decode("utf-8").split("\n") if i])
         all_jobs_df = pandas.read_csv(StringIO(f.getvalue()), delimiter="|")
         all_jobs_df = all_jobs_df.loc[all_jobs_df.State == "COMPLETED"]
@@ -37,7 +37,7 @@ class Command(BaseCommand):
                 if not job_df.empty: 
                     # take a sampling of the completed jobs
                     job_df = job_df.sample(n=min(options['nsamples'], len(job_df))) 
-                    for jobid, numcpus, nnodes in zip(job_df.JobID, job_df.AllocCPUS, job_df.NNodes):
+                    for jobid, numcpus, nnodes, time in zip(job_df.JobID, job_df.AllocCPUS, job_df.NNodes, job_df.Start):
                         try:
                             result = subprocess.run(["seff", "{0}".format(jobid)], stdout=subprocess.PIPE)  
                             result = result.stdout.decode("utf-8").split("\n")
@@ -69,7 +69,7 @@ class Command(BaseCommand):
                             if mem_requested_unit == "TB":
                                 mem_requested = mem_requested * 1000
 
-                            eff = Efficiency(user=user, jobid=jobid, emailed=False, cpueff=cpueff, mem_eff=mem_eff, mem_used=mem_used, mem_requested=mem_requested, number_of_cpus=numcpus, number_of_nodes=nnodes)
+                            eff = Efficiency(user=user, jobid=jobid, emailed=False, cpueff=cpueff, mem_eff=mem_eff, mem_used=mem_used, mem_requested=mem_requested, number_of_cpus=numcpus, number_of_nodes=nnodes, job_start=time)
                             eff.save()
                         except:
                             print("Processing of jobid {0} from user {1} failed".format(jobid, netid))

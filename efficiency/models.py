@@ -18,3 +18,4 @@ class Efficiency(models.Model):
     emailed = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    job_start = models.DateTimeField()
