@@ -53,6 +53,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # third party
+    'django_extensions',
+
     # rcsslurmfollowup apps
     'efficiency.apps.EfficiencyConfig',
     'users.apps.UsersConfig',
