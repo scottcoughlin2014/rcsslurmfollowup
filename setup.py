@@ -2,22 +2,22 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Scott Coughlin (2019)
 #
-# This file is part of the rcsfootprints python package.
+# This file is part of the rcsslurmfollowup python package.
 #
-# rcsfootprints is free software: you can redistribute it and/or modify
+# rcsslurmfollowup is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# rcsfootprints is distributed in the hope that it will be useful,
+# rcsslurmfollowup is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with rcsfootprints.  If not, see <http://www.gnu.org/licenses/>.
+# along with rcsslurmfollowup.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Setup the rcsfootprints package
+"""Setup the rcsslurmfollowup package
 """
 
 from __future__ import print_function
@@ -100,8 +100,8 @@ extras_require = {
 packagenames = find_packages()
 
 # Executables go in a folder called bin
-PACKAGENAME = 'rcsfootprints'
-DISTNAME = 'rcsfootprints' #'YOUR DISTRIBTUION NAME (I.E. PIP INSTALL DISTNAME)' Generally good to be same as packagename
+PACKAGENAME = 'rcsslurmfollowup'
+DISTNAME = 'rcsslurmfollowup' #'YOUR DISTRIBTUION NAME (I.E. PIP INSTALL DISTNAME)' Generally good to be same as packagename
 AUTHOR = 'Scott Coughlin'
 AUTHOR_EMAIL = 'scottcoughlin2014@u.northwestern.edu'
 LICENSE = 'GPLv3+'

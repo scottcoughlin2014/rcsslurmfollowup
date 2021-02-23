@@ -1,2 +1,2 @@
 include versioneer.py
-include rcsfootprints/_version.py
+include rcsslurmfollowup/_version.py
