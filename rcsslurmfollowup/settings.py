@@ -43,9 +43,9 @@ DEBUG = False
 ALLOWED_HOSTS = ['localhost']
 
 NOTEBOOK_ARGUMENTS = [
-    '--port', '8000',
+    '--port', '8001',
+    '--no-browser',
 ]
-
 
 # Application definition
 
@@ -98,15 +98,10 @@ WSGI_APPLICATION = 'rcsslurmfollowup.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ['SLURM_DATABASE_NAME'],
-        'USER': os.environ['SLURM_USER'],
-        'PASSWORD': os.environ['SLURM_PASSWORD'],
-        'HOST': os.environ['SLURM_HOST'],
-        'PORT': os.environ['SLURM_PORT'],
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
