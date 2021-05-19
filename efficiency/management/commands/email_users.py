@@ -13,9 +13,9 @@ class Command(BaseCommand):
     help = 'Command that emails users about their computing resource efficiency based on certain criteria'
 
     def add_arguments(self, parser):
-        parser.add_argument("--memory-efficiency-threshold", type=int, default = 0.5)
+        parser.add_argument("--memory-efficiency-threshold", type=float, default = 0.5)
         parser.add_argument("--memory-requested-threshold", type=int, default = 10)
-        parser.add_argument("--cpu-efficiency-threshold", type=int, default = 0.5)
+        parser.add_argument("--cpu-efficiency-threshold", type=float, default = 0.5)
         parser.add_argument("--cpus-requested-threshold", type=int, default = 14)
         parser.add_argument("--start-time", default = datetime.datetime.now().strftime("%Y-%m-%d"),
                             help="It must be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format.")
@@ -29,8 +29,7 @@ class Command(BaseCommand):
         print("""
 There were {0}/{1} jobs that requested more than {2}GB of memory and less than {3} CPUs
 that have a memory efficiency less than 50 percent during this time
-""".format(Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(mem_eff__lt=0.5).filter(mem_requested__gt=options['memory_requested_threshold']).filter(number_of_cpus__lt=options['cpus_requested_threshold']).count(), Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(mem_requested__gt=options['memory_requested_threshold']).filter(number_of_cpus__lt=options['cpus_requested_threshold']).count(), options['memory_requested_threshold'], options['cpus_requested_threshold']))
-        breakpoint()
+""".format(Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(mem_requested__gt=options['memory_requested_threshold']).filter(number_of_cpus__lt=options['cpus_requested_threshold']).count(), Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(mem_requested__gt=options['memory_requested_threshold']).filter(number_of_cpus__lt=options['cpus_requested_threshold']).count(), options['memory_requested_threshold'], options['cpus_requested_threshold']))
         # loop over jobs where a certain memory efficiency was not met and the user has not been emailed about these jobs
         all_jobs_ids = []
         all_number_of_cpus = []
@@ -55,7 +54,7 @@ that have a memory efficiency less than 50 percent during this time
             message_text="""
 Hello,
 
-The Research Computing Services team at Northwestern is attempting to help general access users understand the differences between how many computing resources they are requesting, versus how many they are actually using. This effort is meant to help in two ways. First, this can help your FairShare score which determines your priority in receiving computing resources relative to the rest of the community. Second, this can help make sure that we are maximizing the research computing provided by QUEST. To this end, we wanted to inform you of some recent jobs you have submitted which use less than half of the memory you requested for them. We also provide a recommended setting for the memory of each job
+The Research Computing Services team at Northwestern is attempting to help general access users understand the differences between the computing resources they request for their job versus the computing resources that end up being used by that job. This effort is meant to help in two ways. First, this can help your FairShare score which determines your priority in receiving computing resources relative to the rest of the community. Second, this can help make sure that we are maximizing the research computing provided by QUEST. To this end, we wanted to inform you of some recent jobs you have submitted which use less than half of the memory you requested for them. We also provide a recommended setting for the memory of each job
 
 """
             for jobid, mem_eff, mem_requested, num_cpus, mem_used, nnodes in zip(utilization.jobid, utilization.mem_eff, utilization.mem_requested, utilization.number_of_cpus, utilization.mem_used, utilization.nnodes):
@@ -66,7 +65,7 @@ Recommendation #SBATCH --mem-per-cpu={7}
 """.format(jobid, nnodes, num_cpus, mem_requested, mem_requested/num_cpus, mem_used, mem_eff, numpy.ceil(mem_used) + 1)
 
             message_text = message_text + """
-Please see https://kb.northwestern.edu/92939 for more information on learning about the memory footprint of your programs and please do not hesitate to e-mail any question you have to quest-help@northwestern.edu,
+Please see https://kb.northwestern.edu/92939 for more information on how to determine the memory footprint of your completed jobs and please do not hesitate to e-mail any question you have to quest-help@northwestern.edu,
 
 Thanks!
 
@@ -80,7 +79,6 @@ s-coughlin@northwestern.edu
 """
             # send email
             send_followup(credentials_token=options['google_api_token'], to='mnballer1992@gmail.com', subject=subject, message_text=message_text)
-            breakpoint()
             job_obj = Efficiency.objects.get(jobid=jobid)
             job_obj.emailed =True
             job_obj.save()

@@ -8,6 +8,9 @@ import pandas
 import time
 import datetime
 import csv
+import warnings
+
+warnings.filterwarnings("ignore")
 
 class Command(BaseCommand):
     help = 'Command to update efficiency tables with memory requested and memory used information for a given day'

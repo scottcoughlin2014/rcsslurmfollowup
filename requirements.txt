@@ -3,3 +3,6 @@ django-extensions
 ipython
 jupyter
 pandas
+matplotlib
+google-api-python-client
+google-auth-oauthlib
