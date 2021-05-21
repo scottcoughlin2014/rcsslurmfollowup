@@ -1,27 +1,52 @@
 from django.core.management.base import BaseCommand, CommandError
 from efficiency.models import Efficiency
 from users.models import CustomUser
-from utils.quickstart import send_followup
 
 import subprocess 
 import pandas 
 import time
 import numpy
 import datetime
+import email
+import smtplib
+
+def send_allocation_email(email_values: list) -> None:
+    """Emails users for new allocation and renewal notices.
+    Values in the email_values list are as follows:
+    0: email address
+    1: name
+    2: message_text
+    """
+    message = email.message.EmailMessage()
+    message["From"] = email.headerregistry.Address(
+        "Research Computing", "quest-help", "northwestern.edu")
+    local_part: str = email_values[0].split("@")[0]
+    domain: str = email_values[0].split("@")[1]
+    message["To"] = email.headerregistry.Address(email_values[1],
+                                                 local_part, domain)
+    # BCC Scotty so that we have a log of the email being sent
+    message["bcc"] = email.headerregistry.Address("Scott Coughlin",
+                                                  "s-coughlin",
+                                                  "northwestern.edu")
+    message["Subject"] = "Concerning Utilization of Computing Resources by Recent Jobs on QUEST"
+    # Set HTML as the primary method with a plaintext failover
+    message.set_content(email_values[2])
+    smtpservice = smtplib.SMTP("localhost")
+    smtpservice.send_message(message)
+    smtpservice.quit()
 
 class Command(BaseCommand):
     help = 'Command that emails users about their computing resource efficiency based on certain criteria'
 
     def add_arguments(self, parser):
-        parser.add_argument("--memory-efficiency-threshold", type=float, default = 0.5)
-        parser.add_argument("--memory-requested-threshold", type=int, default = 10)
+        parser.add_argument("--memory-efficiency-threshold", type=float, default = 0.25)
+        parser.add_argument("--memory-requested-threshold", type=int, default = 16)
         parser.add_argument("--cpu-efficiency-threshold", type=float, default = 0.5)
-        parser.add_argument("--cpus-requested-threshold", type=int, default = 14)
+        parser.add_argument("--cpus-requested-threshold", type=int, default = 52)
         parser.add_argument("--start-time", default = datetime.datetime.now().strftime("%Y-%m-%d"),
                             help="It must be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format.")
         parser.add_argument("--end-time", default = datetime.datetime.now().strftime("%Y-%m-%d"),
                             help="It must be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format.")
-        parser.add_argument("--google-api-token")
 
     def handle(self, *args, **options):
         # For now we simple print this reflag information
@@ -39,7 +64,7 @@ that have a memory efficiency less than 50 percent during this time
         all_users = []
         all_mem_used = []
         all_emails = []
-        for eff in Efficiency.objects.filter(emailed=False).filter(mem_requested__gt=options['memory_requested_threshold']).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(number_of_cpus__lt=options['cpus_requested_threshold']).filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).order_by('user'): 
+        for eff in Efficiency.objects.filter(user__has_been_emailed=False).filter(emailed=False).filter(mem_requested__gt=options['memory_requested_threshold']).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(number_of_cpus__lte=options['cpus_requested_threshold']).filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).order_by('user'): 
             all_jobs_ids.append(eff.jobid)
             all_memory_requested.append(eff.mem_requested)
             all_mem_eff.append(eff.mem_eff)
@@ -50,7 +75,7 @@ that have a memory efficiency less than 50 percent during this time
             all_emails.append(eff.user.email)
         df = pandas.DataFrame({'jobid': all_jobs_ids, 'mem_requested' : all_memory_requested, 'mem_eff' : all_mem_eff, 'user' : all_users, 'email': all_emails, 'number_of_cpus' : all_number_of_cpus, 'mem_used' : all_mem_used, 'nnodes' : all_number_of_nodes})
         for (user, email), utilization in df.groupby(["user", "email"]):
-            subject = "Concerning Utilization of Computing Resources by Recent Jobs on QUEST"
+            all_jobs = []  
             message_text="""
 Hello,
 
@@ -63,6 +88,7 @@ The Research Computing Services team at Northwestern is attempting to help gener
 
 Recommendation #SBATCH --mem-per-cpu={7}
 """.format(jobid, nnodes, num_cpus, mem_requested, mem_requested/num_cpus, mem_used, mem_eff, numpy.ceil(mem_used) + 1)
+                all_jobs.append(jobid)
 
             message_text = message_text + """
 Please see https://kb.northwestern.edu/92939 for more information on how to determine the memory footprint of your completed jobs and please do not hesitate to e-mail any question you have to quest-help@northwestern.edu,
@@ -78,7 +104,12 @@ Northwestern University
 s-coughlin@northwestern.edu
 """
             # send email
-            send_followup(credentials_token=options['google_api_token'], to='mnballer1992@gmail.com', subject=subject, message_text=message_text)
-            job_obj = Efficiency.objects.get(jobid=jobid)
-            job_obj.emailed =True
-            job_obj.save()
+            send_allocation_email(["scottcoughlin2014@u.northwestern.edu", "Scott Coughlin", message_text])
+            for ji in all_jobs:
+                job_obj = Efficiency.objects.get(jobid=ji)
+                job_obj.emailed = True
+                job_obj.save()
+            user_obj = job_obj.user
+            user_obj.has_been_emailed = True
+            user_obj.save()
+            breakpoint()

@@ -13,7 +13,7 @@ source activate /projects/a9009/sbc538/improve_slurm_efficiency_project/improve-
 ```
 ./manage.py add_users
 ./manage.py assess_slurm_usage --start-time=05/01/21 --end-time=05/02/21
-./manage.py email_users --google-api-token token.pickle --start-time 2021-05-01 --end-time 2021-05-02 --memory-efficiency-threshold 0.5 --memory-requested-threshold 10 --cpu-efficiency-threshold 0.5 --cpus-requested-threshold 14
+./manage.py email_users --start-time 2021-05-01 --end-time 2021-05-02 --memory-efficiency-threshold 0.5 --memory-requested-threshold 10 --cpu-efficiency-threshold 0.5 --cpus-requested-threshold 14
 ```
 
 # Start notebook
