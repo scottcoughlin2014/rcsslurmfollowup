@@ -39,7 +39,7 @@ class Command(BaseCommand):
                     user, was_just_created = CustomUser.objects.get_or_create(username=netid)
                     if was_just_created:
                         email = get_email_from_netid(netid)
-                        if 'http' in email:
+                        if 'DOCTYPE' in email:
                             continue
                         print(allocation_name, netid, email)
                         user.email = email

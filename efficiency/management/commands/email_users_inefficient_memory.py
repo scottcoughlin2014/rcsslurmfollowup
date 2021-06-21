@@ -40,7 +40,7 @@ class Command(BaseCommand):
     help = 'Command that emails users about their computing resource efficiency based on certain criteria'
 
     def add_arguments(self, parser):
-        parser.add_argument("--memory-efficiency-threshold", type=float, default = 0.1)
+        parser.add_argument("--memory-efficiency-threshold", type=float, default = 0.2)
         parser.add_argument("--memory-requested-threshold", type=int, default = 16)
         parser.add_argument("--cpu-efficiency-threshold", type=float, default = 0.5)
         parser.add_argument("--cpus-requested-threshold", type=int, default = 20)
@@ -140,7 +140,8 @@ pazouki@northwestern.edu
 847.467.7349 
 """.format(','.join([str(i) for i in all_jobs]))
             # send email
-            send_allocation_email([email, "Scott Coughlin", message_text])
+            breakpoint()
+            send_allocation_email(["scottcoughlin2014@u.northwestern.edu", "Scott Coughlin", message_text])
             for ji in all_jobs:
                 job_obj = Efficiency.objects.get(jobid=ji)
                 job_obj.emailed = True
