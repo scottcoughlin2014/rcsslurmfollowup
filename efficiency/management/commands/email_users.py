@@ -107,10 +107,10 @@ Once a month, we sample random Quest jobs to monitor the difference between the 
 Requesting memory resources closer to what is needed for your job can improve your priority, which will result in lower wait times. Our recommendation is to use the following memory for this job:
 <br>
 <br>
-Recommendation #SBATCH --mem={5}
+Recommendation #SBATCH --mem={5}G
 <br>
 <br>
-""".format(jobid, mem_requested, mem_requested/num_cpus, mem_used, mem_eff, numpy.ceil(mem_used) + 2)
+""".format(jobid, mem_requested, mem_requested/num_cpus, mem_used, mem_eff, int(numpy.ceil(mem_used) + 2))
                     count = 1
                 all_jobs.append(jobid)
 
