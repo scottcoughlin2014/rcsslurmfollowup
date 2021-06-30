@@ -6,6 +6,7 @@ import subprocess
 import pandas
 import time
 import datetime
+import time
 
 class Command(BaseCommand):
     help = 'Command to track user and account information in order to check on slurm usage/other info and to be able to email them if needed'
@@ -37,9 +38,14 @@ class Command(BaseCommand):
                 no_login = result.stdout.decode("utf-8").find("nologin")
                 if no_login == -1:
                     user, was_just_created = CustomUser.objects.get_or_create(username=netid)
+                    if not user.active_nu_member:
+                        continue
                     if was_just_created:
+                        time.sleep(1)
                         email = get_email_from_netid(netid)
                         if 'DOCTYPE' in email:
+                            user.active_nu_member = False
+                            user.save()
                             continue
                         print(allocation_name, netid, email)
                         user.email = email

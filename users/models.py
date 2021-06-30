@@ -9,6 +9,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(('email address'))
     has_been_emailed = models.BooleanField(default=False)
     date_joined = models.DateTimeField(('date joined'), auto_now_add=True)
+    active_nu_member = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 

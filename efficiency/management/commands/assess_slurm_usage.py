@@ -30,7 +30,7 @@ class Command(BaseCommand):
         f.close()
 
         # loop over all users in quest
-        for user in CustomUser.objects.all(): 
+        for user in CustomUser.objects.filter(active_nu_member=True): 
             netid = user.username 
             # figure out how many accounts this user is a part of
             accounts = Account.objects.filter(user=user) 

@@ -65,7 +65,7 @@ that have a memory efficiency less than 50 percent during this time
         all_users = []
         all_mem_used = []
         all_emails = []
-        for eff in Efficiency.objects.filter(user__has_been_emailed=False).filter(emailed=False).filter(mem_requested__gt=options['memory_requested_threshold']).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(number_of_cpus__lte=options['cpus_requested_threshold']).filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).order_by('user'): 
+        for eff in Efficiency.objects.filter(user__active_nu_member=True).filter(user__has_been_emailed=False).filter(emailed=False).filter(mem_requested__gt=options['memory_requested_threshold']).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(number_of_cpus__lte=options['cpus_requested_threshold']).filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).order_by('user'): 
             all_jobs_ids.append(eff.jobid)
             all_memory_requested.append(eff.mem_requested)
             all_mem_eff.append(eff.mem_eff)
