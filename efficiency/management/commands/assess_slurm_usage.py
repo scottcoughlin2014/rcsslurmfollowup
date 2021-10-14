@@ -16,18 +16,20 @@ class Command(BaseCommand):
     help = 'Command to update efficiency tables with memory requested and memory used information for a given day'
 
     def add_arguments(self, parser):
-        parser.add_argument("--start-time", default = datetime.datetime.now().strftime("%m/%d/%y"))
-        parser.add_argument("--end-time", default = datetime.datetime.now().strftime("%m/%d/%y"))
+        parser.add_argument("--start-time", required=True) 
+        parser.add_argument("--end-time", required=True) 
         parser.add_argument("--nsamples", type=int, default=5)
 
     def handle(self, *args, **options):
+        # based on start and stop time, create a date range so we can load daily job data from /artspace/reports/daily/
+        daily_date_range = [[i.strftime("%m%d%y"),(i + datetime.timedelta(days=1)).strftime("%m%d%y")] for i in pandas.date_range(start=options['start_time'],end=options['end_time']).to_pydatetime()]
+        
+        all_jobs_df = pandas.DataFrame()
         # use sacct to find jobids of all completed jobs over the supplied time period
-        f = StringIO()
-        result = subprocess.run(['sacct', '-X', '--starttime={0}'.format(options['start_time']), '--endtime={0}'.format(options['end_time']), "--format=JobID,JobName,Partition,Account,User,AllocCPUS,State,ExitCode,NNodes,Start", "--parsable", "--state=cd", "--allusers"], stdout=subprocess.PIPE)
-        csv.writer(f).writerows([[i] for i in result.stdout.decode("utf-8").split("\n") if i])
-        all_jobs_df = pandas.read_csv(StringIO(f.getvalue()), delimiter="|")
-        all_jobs_df = all_jobs_df.loc[all_jobs_df.State == "COMPLETED"]
-        f.close()
+        for date in daily_date_range:
+            df = pandas.read_csv("/artspace/reports/daily/quest_report_{0}_{1}".format(date[0], date[1]), delimiter="|")
+            df = df.loc[df.State == "COMPLETED"]
+            all_jobs_df = all_jobs_df.append(df)
 
         # loop over all users in quest
         for user in CustomUser.objects.filter(active_nu_member=True): 
@@ -40,7 +42,7 @@ class Command(BaseCommand):
                 if not job_df.empty: 
                     # take a sampling of the completed jobs
                     job_df = job_df.sample(n=min(options['nsamples'], len(job_df))) 
-                    for jobid, numcpus, nnodes, time in zip(job_df.JobID, job_df.AllocCPUS, job_df.NNodes, job_df.Start):
+                    for jobid, numcpus, nnodes, time in zip(job_df.JobID, job_df.ReqCPUS, job_df.AllocNodes, job_df.Start):
                         try:
                             result = subprocess.run(["seff", "{0}".format(jobid)], stdout=subprocess.PIPE)  
                             result = result.stdout.decode("utf-8").split("\n")

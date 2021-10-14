@@ -20,7 +20,7 @@ class Command(BaseCommand):
                 inner_list = []
                 tmp = x.split(":")
                 # check if a general access allocation
-                if 'p' in tmp[0]:
+                if ('p' in tmp[0]) and (tmp[0] != 'p30157'):
                     inner_list.append(tmp[0])
                     inner_list.extend(tmp[3].split(','))
                     outter_list.append(inner_list)
@@ -37,13 +37,13 @@ class Command(BaseCommand):
                 result = subprocess.run(["finger", "{0}".format(netid)], stdout=subprocess.PIPE)
                 no_login = result.stdout.decode("utf-8").find("nologin")
                 if no_login == -1:
-                    user, was_just_created = CustomUser.objects.get_or_create(username=netid)
-                    if not user.active_nu_member:
+                    if netid in ['jsteege', 'akh9585', 'akh9585', 'apv175', 'barryc', 'sas4990', 'sbc538', 'zhs7376', 'ctg9595', 'jon9348', 'damir', 'apm3087']:
                         continue
+                    user, was_just_created = CustomUser.objects.get_or_create(username=netid)
                     if was_just_created:
                         time.sleep(1)
                         email = get_email_from_netid(netid)
-                        if 'DOCTYPE' in email:
+                        if email == 'No Email':
                             user.active_nu_member = False
                             user.save()
                             continue

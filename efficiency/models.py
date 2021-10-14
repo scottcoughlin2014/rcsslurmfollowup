@@ -8,7 +8,7 @@ class Efficiency(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    jobid = models.IntegerField()
+    jobid = models.CharField(max_length=100)
     number_of_cpus = models.IntegerField()
     number_of_nodes = models.IntegerField()
     cpueff = models.FloatField()

@@ -44,9 +44,9 @@ class Command(BaseCommand):
         parser.add_argument("--memory-requested-threshold", type=int, default = 16)
         parser.add_argument("--cpu-efficiency-threshold", type=float, default = 0.5)
         parser.add_argument("--cpus-requested-threshold", type=int, default = 20)
-        parser.add_argument("--start-time", default = datetime.datetime.now().strftime("%Y-%m-%d"),
+        parser.add_argument("--start-time", required=True,
                             help="It must be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format.")
-        parser.add_argument("--end-time", default = datetime.datetime.now().strftime("%Y-%m-%d"),
+        parser.add_argument("--end-time", required=True,
                             help="It must be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format.")
 
     def handle(self, *args, **options):
@@ -84,10 +84,10 @@ Dear Quest User,
 We are reaching out to inform you about the efficiency of some of your jobs on Quest and a possible opportunity for reducing your jobs’ wait times and improving how efficiently they use computing resources.
 <br>
 <br>
-Once a month, we sample random Quest jobs to monitor the difference between the requested and utilized computing and memory resources. Our data shows that at least one of your jobs, indicated below, requested a larger amount of resources than needed and may be affecting your job’s wait time.
+Once a month, we sample random Quest jobs to monitor the difference between the requested and utilized computing and memory resources. Our data from {0} to {1} shows that at least one of your jobs, indicated below, requested a larger amount of resources than needed and this may be affecting your job’s wait time.
 <br>
 <br>
-"""
+""".format(options["start_time"], options["end_time"])
             # Only report full statistics on one job, otherwise simply list the other ones
             count = 0
             for jobid, mem_eff, mem_requested, num_cpus, mem_used, nnodes in zip(utilization.jobid, utilization.mem_eff, utilization.mem_requested, utilization.number_of_cpus, utilization.mem_used, utilization.nnodes):
@@ -140,7 +140,7 @@ pazouki@northwestern.edu
 847.467.7349 
 """.format(','.join([str(i) for i in all_jobs]))
             # send email
-            send_allocation_email([email, "Scott Coughlin", message_text])
+            send_allocation_email([email, email, message_text])
             for ji in all_jobs:
                 job_obj = Efficiency.objects.get(jobid=ji)
                 job_obj.emailed = True
