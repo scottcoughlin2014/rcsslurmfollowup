@@ -13,26 +13,25 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        result = subprocess.run(['grep', '11113', '/etc/group'],stdout=subprocess.PIPE)
-        outter_list = []
-        for x in result.stdout.decode('utf-8').split('\n'):
-            try:
-                inner_list = []
-                tmp = x.split(":")
-                # check if a general access allocation
-                if ('p' in tmp[0]) and (tmp[0] != 'p30157'):
-                    inner_list.append(tmp[0])
-                    inner_list.extend(tmp[3].split(','))
-                    outter_list.append(inner_list)
-                else:
-                    continue
-            except:
-                pass
+        # first step is to determine all of the currently active general access allocations
+        subprocess.run("awk '{$1=$1}1' /hpc/slurm/northwestern/allocation_log.txt > all_allocations.txt", shell=True)
+        df = pandas.read_csv('all_allocations.txt', sep=' ')
+        df["Type"] = pandas.to_datetime(df["Type"])
+        df = df.loc[df["Type"] > datetime.datetime.now()]
+        df = df.loc[~df.Allocation.isin(["a9009", "kellogg", "p30157"])]
+        df = df.loc[df.Allocation.apply(lambda x: 'p' in x)]
+        active_general_access = df.Allocation.tolist()
+
+        # second step is to identify all the users in each general access allocation
+        allocation_user_dict = {}
+        for allocation in active_general_access:
+             result = subprocess.run(['grep', '{0}'.format(allocation), '/etc/group'],stdout=subprocess.PIPE)
+             allocation_user_dict[allocation] = result.stdout.decode('utf-8').split('\n')[0].split(":")[-1].split(",")
 
         # loop over allocations and users in that allocation
-        for allocation_and_users in outter_list:
-            allocation_name = allocation_and_users[0]
-            for netid in allocation_and_users[1::]:
+        for allocation_name, users in allocation_user_dict.items():
+            for netid in users:
+                breakpoint()
                 # check if user has been set to no login
                 result = subprocess.run(["finger", "{0}".format(netid)], stdout=subprocess.PIPE)
                 no_login = result.stdout.decode("utf-8").find("nologin")
@@ -41,7 +40,7 @@ class Command(BaseCommand):
                         continue
                     user, was_just_created = CustomUser.objects.get_or_create(username=netid)
                     if was_just_created:
-                        time.sleep(1)
+                        time.sleep(3)
                         email = get_email_from_netid(netid)
                         if email == 'No Email':
                             user.active_nu_member = False
