@@ -31,7 +31,6 @@ class Command(BaseCommand):
         # loop over allocations and users in that allocation
         for allocation_name, users in allocation_user_dict.items():
             for netid in users:
-                breakpoint()
                 # check if user has been set to no login
                 result = subprocess.run(["finger", "{0}".format(netid)], stdout=subprocess.PIPE)
                 no_login = result.stdout.decode("utf-8").find("nologin")
