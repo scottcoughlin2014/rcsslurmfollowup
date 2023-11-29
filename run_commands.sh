@@ -2,7 +2,7 @@
 
 module purge all
 module load python/anaconda3.6
-source activate /projects/a9009/sbc538/improve_slurm_efficiency_project/improve-slurm-eff-env-py38
+source activate /projects/a9009/sbc538/Projects/improve_slurm_efficiency_project/improve-slurm-eff-env-py38
 
 # Add any new users who we have not tracked before
 ./manage.py add_users

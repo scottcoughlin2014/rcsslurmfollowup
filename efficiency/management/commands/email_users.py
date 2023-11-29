@@ -95,13 +95,13 @@ Once a month, we sample random Quest jobs to monitor the difference between the 
                     message_text = message_text + """
 \tJobID : {0}
 <br>
-\tTotal Memory Requested : {1}
+\tTotal Memory Requested : {1}G
 <br>
-\tMemory Requested Per CPU : {2:.2f}
+\tMemory Requested Per CPU : {2:.2f}G
 <br>
-\tTotal Memory Utilized : {3:.2f}
+\tTotal Memory Utilized : {3:.2f}G
 <br>
-\tMemory Efficiency : {4:.4f}
+\tMemory Efficiency : {4:.4f}%
 <br>
 <br>
 Requesting memory resources closer to what is needed for your job can improve your priority, which will result in lower wait times. Our recommendation is to use the following memory for this job:
@@ -118,26 +118,26 @@ Recommendation #SBATCH --mem={5}G
 Additional jobs that should be considered for adjustment have been identified with the following IDs: {0}. 
 <br>
 <br>
-Please visit <a href="https://kb.northwestern.edu/92939">Specifying Memory for Jobs on Quest</a> for more information on how to determine the memory used for your completed jobs including the ones listed above. If you have any questions or need support please contact quest-help@northwestern.edu.
+Please visit <a href="https://services.northwestern.edu/TDClient/30/Portal/KB/ArticleDet?ID=1964#section-required-memory">Specifying Memory for Jobs on Quest</a> for more information on how to determine the memory used for your completed jobs including the ones listed above. If you have any questions or need support please contact quest-help@northwestern.edu.
 <br>
 <br>
 Sincerely, 
 <br>
-Arman 
+Alper 
 <br>
 -- 
 <br>
-Arman Pazouki, PhD (he/him/his) 
+Alper Kinaci, PhD (he/him/his)
 <br>
-Lead Computational Specialist  
+Manager, Research Computing Support Services
 <br>
-Northwestern IT Research Computing Services 
+Research Computing and Data Services | Northwestern IT
 <br>
 Northwestern University 
 <br>
-pazouki@northwestern.edu  
+akinaci@northwestern.edu
 <br>
-847.467.7349 
+847.467.7615
 """.format(','.join([str(i) for i in all_jobs]))
             # send email
             send_allocation_email([email, email, message_text])

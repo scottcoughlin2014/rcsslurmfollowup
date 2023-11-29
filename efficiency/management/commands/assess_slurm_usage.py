@@ -35,14 +35,14 @@ class Command(BaseCommand):
         for user in CustomUser.objects.filter(active_nu_member=True): 
             netid = user.username 
             # figure out how many accounts this user is a part of
-            accounts = Account.objects.filter(user=user) 
-            for account in accounts: 
+            accounts = Account.objects.filter(user=user)
+            for account in accounts:
                 job_df = all_jobs_df.loc[(all_jobs_df.Account == account.account) & (all_jobs_df.User == netid)]
                 # have they submitted jobs during this time frame? 
                 if not job_df.empty: 
-                    # take a sampling of the completed jobs
+                    # take a sampling of the completed jobs (number of samples will depend on how many days of data we have)
                     job_df = job_df.sample(n=min(options['nsamples'], len(job_df))) 
-                    for jobid, numcpus, nnodes, time in zip(job_df.JobID, job_df.ReqCPUS, job_df.AllocNodes, job_df.Start):
+                    for jobid, numcpus, nnodes, start_time, end_time in zip(job_df.JobID, job_df.ReqCPUS, job_df.AllocNodes, job_df.Start, job_df.End):
                         try:
                             result = subprocess.run(["seff", "{0}".format(jobid)], stdout=subprocess.PIPE)  
                             result = result.stdout.decode("utf-8").split("\n")
@@ -74,7 +74,7 @@ class Command(BaseCommand):
                             if mem_requested_unit == "TB":
                                 mem_requested = mem_requested * 1000
 
-                            eff = Efficiency(user=user, jobid=jobid, emailed=False, cpueff=cpueff, mem_eff=mem_eff, mem_used=mem_used, mem_requested=mem_requested, number_of_cpus=numcpus, number_of_nodes=nnodes, job_start=time)
+                            eff = Efficiency(user=user, account=account, jobid=jobid, emailed=False, cpueff=cpueff, mem_eff=mem_eff, mem_used=mem_used, mem_requested=mem_requested, number_of_cpus=numcpus, number_of_nodes=nnodes, job_start=start_time, job_end=end_time)
                             eff.save()
                         except:
                             print("Processing of jobid {0} from user {1} failed".format(jobid, netid))

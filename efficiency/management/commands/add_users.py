@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
 from users.models import CustomUser, Account
-from utils.utils import get_email_from_netid
 
 import subprocess
 import pandas
@@ -21,6 +20,8 @@ class Command(BaseCommand):
         df = df.loc[~df.Allocation.isin(["a9009", "kellogg", "p30157"])]
         df = df.loc[df.Allocation.apply(lambda x: 'p' in x)]
         active_general_access = df.Allocation.tolist()
+        # add b1042
+        active_general_access.append('b1042')
 
         # second step is to identify all the users in each general access allocation
         allocation_user_dict = {}
@@ -39,14 +40,8 @@ class Command(BaseCommand):
                         continue
                     user, was_just_created = CustomUser.objects.get_or_create(username=netid)
                     if was_just_created:
-                        time.sleep(3)
-                        email = get_email_from_netid(netid)
-                        if email == 'No Email':
-                            user.active_nu_member = False
-                            user.save()
-                            continue
-                        print(allocation_name, netid, email)
-                        user.email = email
+                        print(allocation_name, netid, "{0}@e.northwestern.edu".format(netid))
+                        user.email = "{0}@e.northwestern.edu".format(netid)
                         user.is_superuser=False
                         user.is_staff=False
                         user.save()

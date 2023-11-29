@@ -43,7 +43,7 @@ DEBUG = False
 ALLOWED_HOSTS = ['localhost']
 
 NOTEBOOK_ARGUMENTS = [
-    '--port', '8001',
+    '--port', '8004',
     '--no-browser',
 ]
 
