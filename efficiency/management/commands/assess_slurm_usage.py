@@ -29,7 +29,7 @@ class Command(BaseCommand):
         for date in daily_date_range:
             df = pandas.read_csv("/artspace/reports/daily/quest_report_{0}_{1}".format(date[0], date[1]), delimiter="|")
             df = df.loc[df.State == "COMPLETED"]
-            all_jobs_df = all_jobs_df.append(df)
+            all_jobs_df = pandas.concat([all_jobs_df, df])
 
         # loop over all users in quest
         for user in CustomUser.objects.filter(active_nu_member=True): 

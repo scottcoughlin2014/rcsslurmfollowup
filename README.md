@@ -1,12 +1,24 @@
 # Install enviroment
 ```
-conda create --prefix /projects/a9009/sbc538/improve_slurm_efficiency_project/improve-slurm-eff-env-py38 -c conda-forge django python=3.8 django-extensions jupyter ipython
+module purge
+module load mamba/23.1.0
+mamba create --prefix=/projects/a9009/sbc538/Projects/OverSubscription/envs/over-subscription-env-py310 -c conda-forge django python=3.10 django-extensions jupyter ipython pandas
 ```
 # Environment on QUEST
 ```
 module purge all
-module load python-miniconda3/4.12.0
-source activate /projects/a9009/sbc538/Projects/improve_slurm_efficiency_project/improve-slurm-eff-env-py38
+module load mamba/23.1.0
+source activate /projects/a9009/sbc538/Projects/OverSubscription/envs/over-subscription-env-py310
+```
+
+# Running code
+One time initialization of Django database and tables based on the Model definition in `efficiency/models.py`.
+```
+module purge all
+module load mamba/23.1.0
+source activate /projects/a9009/sbc538/Projects/OverSubscription/envs/over-subscription-env-py310
+./manage.py makemigrations
+./manage.py migrate
 ```
 
 # Running code
