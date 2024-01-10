@@ -25,7 +25,8 @@ source activate /projects/a9009/sbc538/Projects/OverSubscription/envs/over-subsc
 ```
 ./manage.py add_users
 ./manage.py assess_slurm_usage --start-time 2023-11-01 --end-time 2023-11-30 --nsamples 30
-./manage.py email_users --start-time 2023-11-01 --end-time 2023-11-30 --memory-efficiency-threshold 0.5 --memory-requested-threshold 10 --cpu-efficiency-threshold 0.5 --cpus-requested-threshold 14
+./manage.py print_memory_efficiency --start-time 2023-11-01 --end-time 2023-11-30 --memory-efficiency-threshold 0.2 --memory-requested-threshold 16
+./manage.py email_users --start-time 2023-11-01 --end-time 2023-11-30 --memory-efficiency-threshold 0.2 --memory-requested-threshold 16
 ```
 
 # Start notebook

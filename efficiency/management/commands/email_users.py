@@ -42,8 +42,6 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--memory-efficiency-threshold", type=float, default = 0.1)
         parser.add_argument("--memory-requested-threshold", type=int, default = 16)
-        parser.add_argument("--cpu-efficiency-threshold", type=float, default = 0.5)
-        parser.add_argument("--cpus-requested-threshold", type=int, default = 20)
         parser.add_argument("--start-time", required=True,
                             help="It must be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format.")
         parser.add_argument("--end-time", required=True,
@@ -51,11 +49,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # For now we simple print this reflag information
-        print("There were {0} jobs that had a CPU efficiency less than 50 percent during this time".format(Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(cpueff__lt=options['cpu_efficiency_threshold']).count()))
         print("""
-There were {0}/{1} jobs that requested more than {2}GB of memory and less than {3} CPUs
-that have a memory efficiency less than 50 percent during this time
-""".format(Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(mem_requested__gt=options['memory_requested_threshold']).filter(number_of_cpus__lt=options['cpus_requested_threshold']).count(), Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(mem_requested__gt=options['memory_requested_threshold']).filter(number_of_cpus__lt=options['cpus_requested_threshold']).count(), options['memory_requested_threshold'], options['cpus_requested_threshold']))
+There were {0}/{1} jobs that requested more than {2}GB of memory and had an efficiency less than {3} percent during this time
+""".format(Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(mem_requested__gt=options['memory_requested_threshold']).count(), Efficiency.objects.filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).filter(mem_requested__gt=options['memory_requested_threshold']).count(), options['memory_requested_threshold'], options['memory_efficiency_threshold']))
         # loop over jobs where a certain memory efficiency was not met and the user has not been emailed about these jobs
         all_jobs_ids = []
         all_number_of_cpus = []
@@ -65,7 +61,7 @@ that have a memory efficiency less than 50 percent during this time
         all_users = []
         all_mem_used = []
         all_emails = []
-        for eff in Efficiency.objects.filter(user__active_nu_member=True).filter(user__has_been_emailed=False).filter(emailed=False).filter(mem_requested__gt=options['memory_requested_threshold']).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(number_of_cpus__lte=options['cpus_requested_threshold']).filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).order_by('user'): 
+        for eff in Efficiency.objects.filter(user__active_nu_member=True).filter(user__has_been_emailed=False).filter(emailed=False).filter(mem_requested__gt=options['memory_requested_threshold']).filter(mem_eff__lt=options['memory_efficiency_threshold']).filter(job_start__gte=options["start_time"]).filter(job_start__lte=options["end_time"]).order_by('user'): 
             all_jobs_ids.append(eff.jobid)
             all_memory_requested.append(eff.mem_requested)
             all_mem_eff.append(eff.mem_eff)
@@ -139,12 +135,13 @@ akinaci@northwestern.edu
 <br>
 847.467.7615
 """.format(','.join([str(i) for i in all_jobs]))
+            print(email)
             # send email
-            send_allocation_email([email, email, message_text])
-            for ji in all_jobs:
-                job_obj = Efficiency.objects.get(jobid=ji)
-                job_obj.emailed = True
-                job_obj.save()
-            user_obj = job_obj.user
-            user_obj.has_been_emailed = True
-            user_obj.save()
+            #send_allocation_email([email, email, message_text])
+            #for ji in all_jobs:
+            #    job_obj = Efficiency.objects.get(jobid=ji)
+            #    job_obj.emailed = True
+            #    job_obj.save()
+            #user_obj = job_obj.user
+            #user_obj.has_been_emailed = True
+            #user_obj.save()
